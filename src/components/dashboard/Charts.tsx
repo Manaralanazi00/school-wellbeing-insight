@@ -93,7 +93,10 @@ export function StressSourcesDonut({
             paddingAngle={3}
             cornerRadius={6}
             animationDuration={900}
-            onClick={(_, i) => onSelect?.(data[i])}
+            onClick={(_, i) => {
+              const item = data[i];
+              if (item) onSelect?.(item);
+            }}
             onMouseEnter={(_, i) => setHover(i)}
             onMouseLeave={() => setHover(null)}
           >
