@@ -7,6 +7,8 @@ import { Progress } from "@/components/ui/progress";
 import { SiteFooter, SiteHeader } from "@/components/site/SiteChrome";
 import { PrivacyChip } from "@/components/PrivacyBadge";
 import { cn } from "@/lib/utils";
+import { addCheckIn } from "@/lib/checkin-store";
+
 import {
   STRESSOR_OPTIONS,
   STRESS_LEVELS,
@@ -287,9 +289,10 @@ function CheckIn() {
             <div key="results" className="animate-fade-up space-y-5">
               <Card className="gap-0 p-7 text-center shadow-soft sm:p-9">
                 <p className="text-sm font-semibold uppercase tracking-wider text-teal">
-                  Your Stress Indicator
+                  Current Stress Level
                 </p>
                 <ScoreRing score={score} />
+
                 <p className="text-lg font-semibold">{stressLabel(score)}</p>
                 <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
                   {stressMessage(score)}
@@ -314,6 +317,19 @@ function CheckIn() {
                 ))}
               </div>
 
+              <Card className="gap-0 border-teal/30 bg-teal-soft/50 p-5 shadow-soft">
+                <div className="flex items-start gap-3 text-left">
+                  <ShieldCheck className="mt-0.5 size-5 shrink-0 text-teal" />
+                  <div>
+                    <h3 className="text-base font-semibold">What happens next?</h3>
+                    <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                      Your response is anonymous and combined with other student responses. Schools
+                      only see aggregated patterns, not individual answers.
+                    </p>
+                  </div>
+                </div>
+              </Card>
+
               <p className="text-center text-xs text-muted-foreground">
                 This is supportive guidance, not a medical or psychological diagnosis.
               </p>
@@ -321,10 +337,14 @@ function CheckIn() {
               <Button
                 size="lg"
                 className="w-full rounded-full shadow-glow"
-                onClick={() => setStep("done")}
+                onClick={() => {
+                  addCheckIn({ level: score, stressors, timing });
+                  setStep("done");
+                }}
               >
                 Submit Anonymously
               </Button>
+
             </div>
           )}
 
