@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 
-export const DEMO_EMAIL = "demo@schoolpulse.com";
+export const DEMO_EMAIL = "school@demo.com";
 export const DEMO_PASSWORD = "demo123";
 
 let signedIn = false;
