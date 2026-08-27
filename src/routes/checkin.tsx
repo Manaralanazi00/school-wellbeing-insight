@@ -401,7 +401,7 @@ function CheckIn() {
   );
 }
 
-function ScoreRing({ score }: { score: number }) {
+function ScoreRing({ score, label }: { score: number; label: string }) {
   const r = 62;
   const c = 2 * Math.PI * r;
   const tone = score >= 82 ? "var(--destructive)" : score >= 65 ? "var(--warning)" : score >= 45 ? "var(--chart-1)" : "var(--success)";
