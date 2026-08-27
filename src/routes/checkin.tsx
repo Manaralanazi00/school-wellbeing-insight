@@ -422,10 +422,11 @@ function ScoreRing({ score }: { score: number }) {
           style={{ transition: "stroke-dashoffset 1.1s cubic-bezier(0.22,1,0.36,1)" }}
         />
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-4xl font-bold tabular-nums">{score}</span>
-        <span className="text-xs text-muted-foreground">/ 100</span>
+      <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
+        <span className="text-2xl font-bold leading-tight">{label}</span>
+        <span className="mt-1 text-xs text-muted-foreground">Based on your answers</span>
       </div>
+
     </div>
   );
 }
