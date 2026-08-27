@@ -27,25 +27,26 @@ export const Route = createFileRoute("/privacy")({
 const POINTS = [
   {
     icon: Lock,
-    title: "Anonymous",
-    body: "Your name is not required and no student names are displayed in the school dashboard.",
-  },
-  {
-    icon: Users,
-    title: "Aggregated",
-    body: "Schools only see patterns and percentages across groups of students.",
+    title: "No student name required",
+    body: "Check-ins are anonymous. No name, email or login is required, and no student names are ever displayed.",
   },
   {
     icon: EyeOff,
-    title: "Small groups hidden",
-    body: "If a category has fewer than 10 responses, the insight is hidden completely.",
+    title: "No individual responses shown",
+    body: "The school never sees a single student's answers — only combined results across many responses.",
+  },
+  {
+    icon: Users,
+    title: "Aggregated trends only",
+    body: "Schools see patterns and percentages. If a category has fewer than 10 responses, the insight is hidden completely.",
   },
   {
     icon: ShieldCheck,
-    title: "Support, not diagnosis",
-    body: "School Pulse is not a medical or psychological diagnostic tool. It exists to help schools support students earlier.",
+    title: "Prevention and support",
+    body: "Data is used to identify areas where students may need additional support. School Pulse is not a medical or psychological diagnostic tool.",
   },
 ];
+
 
 function PrivacyPage() {
   return (

@@ -289,11 +289,17 @@ function CheckIn() {
             <div key="results" className="animate-fade-up space-y-5">
               <Card className="gap-0 p-7 text-center shadow-soft sm:p-9">
                 <p className="text-sm font-semibold uppercase tracking-wider text-teal">
-                  Current Stress Level
+                  Reported Stress Level
                 </p>
-                <ScoreRing score={score} />
+                <ScoreRing score={score} label={stressLabel(score)} />
 
-                <p className="text-lg font-semibold">{stressLabel(score)}</p>
+                <p className="mx-auto max-w-md text-sm leading-relaxed text-muted-foreground">
+                  Your responses suggest that you may be experiencing a{" "}
+                  <span className="font-medium text-foreground">
+                    {stressLabel(score).toLowerCase()}
+                  </span>{" "}
+                  level of stress recently.
+                </p>
                 <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
                   {stressMessage(score)}
                 </p>
@@ -303,6 +309,7 @@ function CheckIn() {
                   </p>
                 )}
               </Card>
+
 
               <div className="grid gap-4 sm:grid-cols-2">
                 {supportFor(stressors).map((c, i) => (
@@ -394,7 +401,7 @@ function CheckIn() {
   );
 }
 
-function ScoreRing({ score }: { score: number }) {
+function ScoreRing({ score, label }: { score: number; label: string }) {
   const r = 62;
   const c = 2 * Math.PI * r;
   const tone = score >= 82 ? "var(--destructive)" : score >= 65 ? "var(--warning)" : score >= 45 ? "var(--chart-1)" : "var(--success)";
@@ -415,10 +422,11 @@ function ScoreRing({ score }: { score: number }) {
           style={{ transition: "stroke-dashoffset 1.1s cubic-bezier(0.22,1,0.36,1)" }}
         />
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-4xl font-bold tabular-nums">{score}</span>
-        <span className="text-xs text-muted-foreground">/ 100</span>
+      <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
+        <span className="text-2xl font-bold leading-tight">{label}</span>
+        <span className="mt-1 text-xs text-muted-foreground">Based on your answers</span>
       </div>
+
     </div>
   );
 }

@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { AlertCircle, Lock, LogIn, ShieldCheck } from "lucide-react";
+import { AlertCircle, Eye, EyeOff, Loader2, Lock, LogIn, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SiteFooter, SiteHeader } from "@/components/site/SiteChrome";
-import { DEMO_EMAIL, DEMO_PASSWORD, signIn } from "@/lib/auth";
+import { isValidEmail, signIn, useDemoAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -15,12 +16,12 @@ export const Route = createFileRoute("/login")({
       {
         name: "description",
         content:
-          "Demo login for the School Pulse school dashboard. Aggregated, anonymous student wellbeing insights only.",
+          "Sign in to the School Pulse staff dashboard to view aggregated, anonymous student wellbeing insights.",
       },
       { property: "og:title", content: "School Login — School Pulse" },
       {
         property: "og:description",
-        content: "Sign in to the School Pulse demo dashboard with the provided demo credentials.",
+        content: "Staff access to aggregated student wellbeing patterns — never individual answers.",
       },
     ],
   }),
@@ -29,26 +30,36 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const navigate = useNavigate();
+  const signedIn = useDemoAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [show, setShow] = useState(false);
+  const [remember, setRemember] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
 
-  function submit(e: React.FormEvent) {
+  useEffect(() => {
+    if (signedIn) navigate({ to: "/dashboard" });
+  }, [signedIn, navigate]);
+
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (email.trim().toLowerCase() === DEMO_EMAIL && password === DEMO_PASSWORD) {
-      setError(null);
-      signIn();
-      navigate({ to: "/dashboard" });
+    const next: { email?: string; password?: string } = {};
+    if (!email.trim()) next.email = "Please enter your school email.";
+    else if (!isValidEmail(email)) next.email = "Please enter a valid email address.";
+    if (!password) next.password = "Please enter your password.";
+    setFieldErrors(next);
+    setError(null);
+    if (Object.keys(next).length) return;
+
+    setLoading(true);
+    const message = await signIn(email, password, remember);
+    setLoading(false);
+    if (message) {
+      setError(message);
       return;
     }
-    setError("Incorrect email or password. Use the demo credentials shown below.");
-  }
-
-  function tryDemo() {
-    setEmail(DEMO_EMAIL);
-    setPassword(DEMO_PASSWORD);
-    setError(null);
-    signIn();
     navigate({ to: "/dashboard" });
   }
 
@@ -63,62 +74,105 @@ function LoginPage() {
             </span>
             <h1 className="mt-5 text-2xl font-bold tracking-tight">School Login</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Demo access to the aggregated school dashboard. No real accounts, no student data.
+              For school staff. The dashboard shows aggregated results only — never individual
+              student responses.
             </p>
 
-            <form className="mt-6 space-y-4" onSubmit={submit}>
+            <form className="mt-6 space-y-5" onSubmit={submit} noValidate>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
                   autoComplete="username"
-                  placeholder="school@demo.com"
+                  placeholder="Enter your school email"
+                  aria-invalid={!!fieldErrors.email}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
+                {fieldErrors.email && (
+                  <p className="text-xs text-destructive">{fieldErrors.email}</p>
+                )}
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  autoComplete="current-password"
-                  placeholder="••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={show ? "text" : "password"}
+                    autoComplete="current-password"
+                    placeholder="Enter your password"
+                    aria-invalid={!!fieldErrors.password}
+                    className="pr-11"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShow((s) => !s)}
+                    aria-label={show ? "Hide password" : "Show password"}
+                    className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                  </button>
+                </div>
+                {fieldErrors.password && (
+                  <p className="text-xs text-destructive">{fieldErrors.password}</p>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between gap-3">
+                <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+                  <Checkbox
+                    checked={remember}
+                    onCheckedChange={(v) => setRemember(v === true)}
+                    aria-label="Remember me"
+                  />
+                  Remember me
+                </label>
+                <button
+                  type="button"
+                  className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+                  onClick={() =>
+                    setError("Password recovery is not available in this prototype.")
+                  }
+                >
+                  Forgot password?
+                </button>
               </div>
 
               {error && (
-                <p className="flex items-start gap-2 rounded-xl bg-destructive-soft p-3 text-sm text-destructive">
+                <p
+                  role="alert"
+                  className="flex items-start gap-2 rounded-xl bg-destructive-soft p-3 text-sm text-destructive"
+                >
                   <AlertCircle className="mt-0.5 size-4 shrink-0" />
                   {error}
                 </p>
               )}
 
-              <Button type="submit" size="lg" className="w-full rounded-full shadow-glow">
-                <LogIn className="size-4" /> Sign In
-              </Button>
               <Button
-                type="button"
+                type="submit"
                 size="lg"
-                variant="outline"
-                className="w-full rounded-full"
-                onClick={tryDemo}
+                disabled={loading}
+                className="w-full rounded-full shadow-glow"
               >
-                Try Demo Dashboard
+                {loading ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" /> Signing in…
+                  </>
+                ) : (
+                  <>
+                    <LogIn className="size-4" /> Log In
+                  </>
+                )}
               </Button>
             </form>
 
-            <div className="mt-6 rounded-xl bg-muted p-4 text-xs text-muted-foreground">
-              <p className="font-medium text-foreground">Demo credentials</p>
-              <p className="mt-1">Email: {DEMO_EMAIL}</p>
-              <p>Password: {DEMO_PASSWORD}</p>
-            </div>
-
-            <p className="mt-5 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-              <Lock className="size-3 text-teal" /> Schools only ever see aggregated results.
+            <p className="mt-6 flex items-center justify-center gap-2 text-center text-xs text-muted-foreground">
+              <Lock className="size-3 shrink-0 text-teal" />
+              Prototype sign-in. No student data and no passwords are stored.
             </p>
           </Card>
         </div>
